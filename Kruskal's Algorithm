@@ -1,0 +1,59 @@
+def find_root(parent, city):
+    """Helper function to find which group a city belongs to."""
+    if parent[city] == city:
+        return city
+    # Track up the chain to find the ultimate leader/root
+    return find_root(parent, parent[city])
+
+def kruskal_mst(graph):
+    mst_edges = []
+    total_cost = 0
+    
+    # 1. Extract ALL roads from the graph map
+    all_roads = []
+    for city_a in graph:
+        for city_b, cost in graph[city_a]:
+            # To avoid adding the same road twice (A-B and B-A), we sort the names
+            if city_a < city_b:
+                all_roads.append((cost, city_a, city_b))
+                
+    # 2. Sort all roads from cheapest to most expensive
+    all_roads.sort()
+    
+    # 3. Initially, every city is its own separate group/island
+    parent = {city: city for city in graph}
+    
+    # 4. Go through the sorted roads and pick the best ones
+    for cost, city_a, city_b in all_roads:
+        root_a = find_root(parent, city_a)
+        root_b = find_root(parent, city_b)
+        
+        # If they belong to different groups, they don't form a loop!
+        if root_a != root_b:
+            mst_edges.append((city_a, city_b, cost))
+            total_cost += cost
+            # Connect the two groups together
+            parent[root_a] = root_b 
+            
+    return mst_edges, total_cost
+
+# --- Example Map ---
+my_graph = {
+    'A': [('B', 2), ('C', 3)],
+    'B': [('A', 2), ('C', 1), ('D', 4)],
+    'C': [('A', 3), ('B', 1), ('D', 5)],
+    'D': [('B', 4), ('C', 5)]
+}
+
+# Run Kruskal's algorithm
+edges, total = kruskal_mst(my_graph)
+
+print("Chosen MST roads (Kruskal):", edges)
+print("Total MST cost:", total)
+
+
+
+OUTPUT :
+
+Chosen MST roads (Kruskal): [('B', 'C', 1), ('A', 'B', 2), ('B', 'D', 4)]
+Total MST cost: 7
